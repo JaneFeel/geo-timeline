@@ -25,6 +25,8 @@ export default class GeoTimeLine {
   readonly font: string;
   /** svg object */
   readonly svg: Selection<SVGSVGElement, unknown, HTMLElement, any>;
+  readonly height: number;
+  private _handleX: number;
   
   /** interval data */
   readonly intervals: IntervalItem[];
@@ -35,6 +37,7 @@ export default class GeoTimeLine {
   /** user input options */
   readonly options: GeoTimeScaleOptions
   private _onChange: (node: NodeItem) => void;
+  private _onDrag: (time: number) => void;
   private _ready: boolean;
   private _cellGroup: Selection<SVGGElement, unknown, HTMLElement, any>;
   private _cell: Selection<SVGGElement | BaseType, NodeItem, SVGGElement, unknown>;
@@ -124,6 +127,9 @@ export default class GeoTimeLine {
       .attr("viewBox", [0, 0, width, height])
       .style("font", this.font)
 
+    this.height = height
+    this._handleX = 0
+
     this._ready = false
 
     this._init()
@@ -139,6 +145,13 @@ export default class GeoTimeLine {
 
   set stage(val: string) {
     const node = this.root.find(node => node.data.name === val)
+    if (node) {
+      this._clicked(undefined, node)
+    }
+  }
+
+  set time(val: number) {
+    const node = this.root.find(node => node.data.start <= val && node.data.end > val)
     if (node) {
       this._clicked(undefined, node)
     }
@@ -179,17 +192,22 @@ export default class GeoTimeLine {
       .append("g")
       .attr("id", "ticks")
 
-    self._handle = self._drawHandle(svg)
+    self._handle = self._drawHandle(svg, self.height)
     self._handle
       .call(drag()
         .on("drag", dragged)
         .on("end", () => {
+          const time = this.getTimeByX(self._handleX, self.height)
           self._handle.attr("cursor", "grab");
+          console.log('time', time);
+          if (self._onDrag) {
+            self._onDrag(time)
+          }
         }))
 
     function dragged(e: D3DragEvent<Element, unknown, unknown>) {
-      console.log('dragged');
-      // self._changeHandlePos(self._zoomedScale, self._handle, self._zoomedScale(self._scaleVal) + e.dx)
+      self._handleX = e.x;
+      self._changeHandlePos(self._handle, e.x, self.height)
       self._handle.attr("cursor", "grabbing")
     }
     
@@ -265,36 +283,35 @@ export default class GeoTimeLine {
       })
   }
 
-  private _drawHandle(svg: Selection<SVGSVGElement, unknown, HTMLElement, any>) {
+  private _drawHandle(svg: Selection<SVGSVGElement, unknown, HTMLElement, any>, height: number) {
     const handle = svg
       .append('g')
       .attr("cursor", 'grab')
+      .attr("id", "handle");
 
-    let handleShape =
-      "M0 0 l 15 20 v 18 q 0 5 -5 5 h -20 q -5 0 -5 -5 v -18 l 15 -20";
+    const cursorHeight = 20;
+    const svgHeight = height;
+
+    // 添加游标
+    handle.append("rect")
+      .attr('x', 0)
+      .attr('y', svgHeight - cursorHeight - 1)
+      .attr("width", 1)
+      .attr("height", cursorHeight)
+      .attr("fill", "black")
+      .attr("id", "handleCursor")
     handle
-      .append("path")
-      .attr("fill", "#ccc")
-      .attr("fill-opacity", 0.85)
-      .attr("stroke", "#333")
-      .attr("stroke-width", "1px")
-      .attr("d", handleShape)
-
-    // Add stripes for texture
-    function addStripe(x: number) {
-      handle
-        .append("rect")
-        .attr("fill", "#515151")
-        .attr("width", 3)
-        .attr("height", 16)
-        .attr("x", x)
-        .attr("y", 21);
-    }
-
-    addStripe(-7.5);
-    addStripe(-1.5);
-    addStripe(4.5);
-
+      .append('text')
+      .attr('x', 0)
+      .attr('y', svgHeight - cursorHeight - 3)
+      .attr("text-anchor", "middle")
+      .text('4000ma')
+      .clone(true)
+      .lower()
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-width", 2)
+      .attr("stroke", "white")
+      .attr("id", "handleText")
     return handle
   }
 
@@ -479,10 +496,38 @@ export default class GeoTimeLine {
     
     const sequence = focus.ancestors().reverse();
     this._sequence = sequence;
-
+    this._changeHandlePos(this._handle, this._handleX, this.height, duration)
     this._dispatchFunc(this._onChange)
 
     return true
   }
 
+  private _changeHandlePos(
+    handle: Selection<SVGGElement, unknown, HTMLElement, any>, 
+    x: number, 
+    height: number, 
+    duration?: number
+  ): boolean {
+    trans(handle, duration)
+      .attr("transform", `translate(${x}, 0), scale(1)`)
+    const text = this.getTimeByX(x, height)
+    if (text > 0) {
+      handle
+        .selectAll('text')
+        .text(`${text}ma`)
+    }
+    return true;
+  }
+
+  private getTimeByX(x: number, height: number): number {
+    const offsetY = height - 10
+    const node = this.root.find(node => node.target.x0 <= x && node.target.x1 > x && node.target.y0 <= offsetY && node.target.y1 > offsetY)
+    if (!node) {
+      return 0
+    }
+    const { start, end } = node.data
+    const nodeWidth = node.target.x1 - node.target.x0
+    const time = Math.floor(start - ((start - end) / nodeWidth * (x - node.target.x0)))
+    return time;
+  }
 }
