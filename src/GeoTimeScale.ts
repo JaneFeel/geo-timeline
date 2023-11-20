@@ -62,6 +62,7 @@ export default class GeoTimeLine {
    * @param {number} [options.fontSize = 12] font size, defaults to 12px
    * @param {string} [options.fontFamily = 'sans-serif'] font family, defaults to 'sans-serif'
    * @param {Function} [options.onChange] callback when focused node change
+   * @param {Function} [options.onDrag] callback when handle drag end
    * @param {Object} [options.margin] svg margin, defaults to { top: 0, right: 0, bottom: 0, left: 0 }
    * @param {Object} [options.padding] svg padding, defaults to { top: 0, right: 0, bottom: 0, left: 0 }
    * @param {number} [options.transition = 450] animation time, defaults to 450ms
@@ -94,9 +95,10 @@ export default class GeoTimeLine {
       width: isNaN(containerWidth) ? 1000 : containerWidth,
       ...options
     }
-    const { width, height, intervalSum, onChange, transition, simplify, neighborWidth, tickLength } = opts
+    const { width, height, intervalSum, onChange, onDrag, transition, simplify, neighborWidth, tickLength } = opts
     this.transition = transition
     this._onChange = onChange
+    this._onDrag = onDrag
     this.font = `${opts.fontSize}px ${opts.fontFamily}`
     this.intervals = intervals
     this._simplify = simplify
@@ -151,6 +153,7 @@ export default class GeoTimeLine {
   }
 
   set time(val: number) {
+    console.log('set time', val);
     const node = this.root.find(node => node.data.start <= val && node.data.end > val)
     if (node) {
       this._clicked(undefined, node)
@@ -496,7 +499,7 @@ export default class GeoTimeLine {
     
     const sequence = focus.ancestors().reverse();
     this._sequence = sequence;
-    this._changeHandlePos(this._handle, this._handleX, this.height, duration)
+    this._changeHandlePos(this._handle, focus.target.x0, this.height, duration)
     this._dispatchFunc(this._onChange)
 
     return true

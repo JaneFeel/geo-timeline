@@ -40,6 +40,7 @@ export default class GeoTimeLine {
      * @param {number} [options.fontSize = 12] font size, defaults to 12px
      * @param {string} [options.fontFamily = 'sans-serif'] font family, defaults to 'sans-serif'
      * @param {Function} [options.onChange] callback when focused node change
+     * @param {Function} [options.onDrag] callback when handle drag end
      * @param {Object} [options.margin] svg margin, defaults to { top: 0, right: 0, bottom: 0, left: 0 }
      * @param {Object} [options.padding] svg padding, defaults to { top: 0, right: 0, bottom: 0, left: 0 }
      * @param {number} [options.transition = 450] animation time, defaults to 450ms

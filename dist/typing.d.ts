@@ -63,6 +63,7 @@ export interface GeoTimeScaleOptions {
     fontFamily?: string;
     /** callback when handle's position or scale level changed */
     onChange?: (node: NodeItem) => void;
+    onDrag?: (time: Number) => void;
     /** defaults to {
       top: 0, right: 0, bottom: 0, left: 0,
     } */
