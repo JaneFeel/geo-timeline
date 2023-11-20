@@ -26,6 +26,7 @@ export default class GeoTimeLine {
   /** svg object */
   readonly svg: Selection<SVGSVGElement, unknown, HTMLElement, any>;
   readonly height: number;
+  readonly width: number;
   private _handleX: number;
   
   /** interval data */
@@ -130,6 +131,7 @@ export default class GeoTimeLine {
       .style("font", this.font)
 
     this.height = height
+    this.width = width
     this._handleX = 0
 
     this._ready = false
@@ -165,11 +167,11 @@ export default class GeoTimeLine {
       }
     })
     if (maxLevelNodeParent) {
-      if (!maxLevelNodeParent.visible) {
-        this._clicked(undefined, maxLevelNodeParent.parent, true);
-      }
       const x = this.getXByTime(val, maxLevelNodeParent);
       this._changeHandlePos(this._handle, x, this.height);
+      if (x > this.width) {
+        this._clicked(undefined, maxLevelNodeParent.parent, true);
+      }
     }
   }
 
