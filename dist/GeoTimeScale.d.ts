@@ -6,6 +6,7 @@ export default class GeoTimeLine {
     /** svg object */
     readonly svg: Selection<SVGSVGElement, unknown, HTMLElement, any>;
     readonly height: number;
+    readonly width: number;
     private _handleX;
     /** interval data */
     readonly intervals: IntervalItem[];
