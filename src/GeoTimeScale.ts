@@ -165,7 +165,9 @@ export default class GeoTimeLine {
       }
     })
     if (maxLevelNodeParent) {
-      this._clicked(undefined, maxLevelNodeParent, true);
+      if (!maxLevelNodeParent.visible) {
+        this._clicked(undefined, maxLevelNodeParent.parent, true);
+      }
       const x = this.getXByTime(val, maxLevelNodeParent);
       this._changeHandlePos(this._handle, x, this.height);
     }
@@ -511,7 +513,7 @@ export default class GeoTimeLine {
     const sequence = focus.ancestors().reverse();
     this._sequence = sequence;
 
-    if (ignoreTrigger) {
+    if (!ignoreTrigger) {
       this._changeHandlePos(this._handle, focus.target.x0, this.height, duration)
       this._dispatchFunc(this._onChange)  
     }
