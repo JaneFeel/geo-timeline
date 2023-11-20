@@ -154,9 +154,20 @@ export default class GeoTimeLine {
 
   set time(val: number) {
     console.log('set time', val);
-    const node = this.root.find(node => node.data.start >= val && node.data.end < val)
-    if (node) {
-      this._clicked(undefined, node)
+    let maxLevelNodeParent;
+    let maxLevel = 0;
+    this.root.each(node => {
+      if (node.data.start >= val && node.data.end < val) {
+        if (!maxLevelNodeParent || node.depth > maxLevel) {
+          maxLevelNodeParent = node.parent
+          maxLevel = node.depth
+        }
+      }
+    })
+    if (maxLevelNodeParent) {
+      this._clicked(undefined, maxLevelNodeParent, true);
+      const x = this.getXByTime(val, maxLevelNodeParent);
+      this._changeHandlePos(this._handle, x, this.height);
     }
   }
 
@@ -427,7 +438,7 @@ export default class GeoTimeLine {
   /**
    * click rect and zoom
    */
-  private _clicked = (event: any, p: NodeItem): boolean => {
+  private _clicked = (event: any, p: NodeItem, ignoreTrigger = false): boolean => {
     const focus = p === this._focus ? (p?.parent ?? p) : p;
     this._focus = focus;
 
@@ -499,8 +510,11 @@ export default class GeoTimeLine {
     
     const sequence = focus.ancestors().reverse();
     this._sequence = sequence;
-    this._changeHandlePos(this._handle, focus.target.x0, this.height, duration)
-    this._dispatchFunc(this._onChange)
+
+    if (ignoreTrigger) {
+      this._changeHandlePos(this._handle, focus.target.x0, this.height, duration)
+      this._dispatchFunc(this._onChange)  
+    }
 
     return true
   }
@@ -532,5 +546,15 @@ export default class GeoTimeLine {
     const nodeWidth = node.target.x1 - node.target.x0
     const time = Math.floor(start - ((start - end) / nodeWidth * (x - node.target.x0)))
     return time;
+  }
+
+  private getXByTime(time: number, node: NodeItem): number {
+    if (!node) {
+      return 0
+    }
+    const { start, end } = node.data
+    const nodeWidth = node.target.x1 - node.target.x0
+    const x = node.target.x0 + (start - time) / (start - end) * nodeWidth
+    return x;
   }
 }
