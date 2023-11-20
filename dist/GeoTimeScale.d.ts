@@ -79,4 +79,5 @@ export default class GeoTimeLine {
     private _clicked;
     private _changeHandlePos;
     private getTimeByX;
+    private getXByTime;
 }
