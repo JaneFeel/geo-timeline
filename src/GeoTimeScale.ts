@@ -154,7 +154,7 @@ export default class GeoTimeLine {
 
   set time(val: number) {
     console.log('set time', val);
-    const node = this.root.find(node => node.data.start <= val && node.data.end > val)
+    const node = this.root.find(node => node.data.start >= val && node.data.end < val)
     if (node) {
       this._clicked(undefined, node)
     }
