@@ -150,7 +150,7 @@ export default class GeoTimeLine {
   set stage(val: string) {
     const node = this.root.find(node => node.data.name === val)
     if (node) {
-      this._clicked(undefined, node)
+      this._clicked(undefined, node, true)
     }
   }
 
@@ -548,7 +548,7 @@ export default class GeoTimeLine {
     }
     const { start, end } = node.data
     const nodeWidth = node.target.x1 - node.target.x0
-    const time = Math.floor(start - ((start - end) / nodeWidth * (x - node.target.x0)))
+    const time = Math.ceil(start - ((start - end) / nodeWidth * (x - node.target.x0)))
     return time;
   }
 
