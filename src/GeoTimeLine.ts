@@ -64,6 +64,7 @@ export default class GeoTimeLine {
   private _margin: MarginOpts;
   private _padding: MarginOpts;
   private _showTick: boolean;
+  private _limitHandle: boolean;
   /** get or set animation transition time */
   transition: number;
   private _forceTrans: boolean;
@@ -85,6 +86,7 @@ export default class GeoTimeLine {
    * @param {number} [options.minZoom] min zoom level
    * @param {number} [options.maxZoom = 10] min zoom level, defaults to 10
    * @param {boolean} [options.showTick = true] show or hide tick, defaults to true
+   * @param {boolean} [options.limitHandle = true] limit handle position
    */
   constructor(selector: string | BaseType, intervals: IntervalItem[], options: GeoTimeLineOptions = {}) {
     const selection = select(selector as BaseType)
@@ -109,7 +111,7 @@ export default class GeoTimeLine {
       width: isNaN(containerWidth) ? 1000 : containerWidth,
       ...options
     }
-    const { width, height, margin, padding, intervalSum, onChange, onAfterChange, time, transition, showTick } = opts
+    const { width, height, margin, padding, intervalSum, onChange, onAfterChange, time, transition, showTick, limitHandle } = opts
     this._width = width
     this._height = height
     this._margin = margin
@@ -125,6 +127,7 @@ export default class GeoTimeLine {
     this._minZoom = opts.minZoom = opts.minZoom ?? this._zoomWidth / (this._zoomWidth + padding.right + padding.left)
     this._maxZoom = opts.maxZoom
     this._showTick = showTick
+    this._limitHandle = limitHandle
     this.intervals = intervals
 
     this.options = opts
@@ -496,7 +499,11 @@ export default class GeoTimeLine {
     let scaleX = zoomedScale.invert(x)
     if (scaleX < 0) scaleX = 0
     if (scaleX > this._timeLength) scaleX = this._timeLength;
-    
+
+    const halfHandleWidth = 15
+    if (x < halfHandleWidth) x = halfHandleWidth
+    if (x > this._width - halfHandleWidth) x = this._width - halfHandleWidth
+
     trans(handle, duration)
       .attr("transform", `translate(${x}, ${this._margin.top}), scale(${this._heightScale})`)
     this._scaleVal = scaleX
