@@ -217,10 +217,10 @@ export default class GeoTimeLine {
       ])
 
     self._zoomedScale = self._xAxis.copy()
+    self._text = self._drawText(self._cell)
 
     if (self._showTick) {
       // draw text
-      self._text = self._drawText(self._cell)
       self._ticks = self._addTicks(self._cell)      
     }
 
@@ -406,8 +406,7 @@ export default class GeoTimeLine {
         .attr('width', d => (d.target.x1 - d.target.x0))
         .attr('x', d => (d.target.x0));
 
-      if (this._showTick) {
-        trans(this._text, duration)
+      trans(this._text, duration)
         .attr("fill-opacity", (d) =>
           d.target.x1 - d.target.x0 > 14 ? 1 : 0
         )
@@ -423,15 +422,16 @@ export default class GeoTimeLine {
           return rectWidth - 10 < labelWidth ? abbrev : d.data.name;
         });
       
-      trans(this._ticks, duration)
-        .attr("transform", (d) => `translate(${d.target.x0}, 0)`)
-        .attr('opacity', ((d: NodeItem) => {
-          const text = d.data.start + 'ma'
-          const rectWidth = Math.abs(d.target.x1 - d.target.x0);
-          const labelWidth = getTextWidth(text, this.font);
+      if (this._showTick) {
+        trans(this._ticks, duration)
+          .attr("transform", (d) => `translate(${d.target.x0}, 0)`)
+          .attr('opacity', ((d: NodeItem) => {
+            const text = d.data.start + 'ma'
+            const rectWidth = Math.abs(d.target.x1 - d.target.x0);
+            const labelWidth = getTextWidth(text, this.font);
 
-          return rectWidth < labelWidth * (1 - 0.05 * d.data.level) ? 0 : 1;
-        }))
+            return rectWidth < labelWidth * (1 - 0.05 * d.data.level) ? 0 : 1;
+          }))
       }
 
       trans(this._cell, duration)
