@@ -16,6 +16,7 @@ const DefaultOpts: Partial<GeoTimeLineOptions> = {
   transition: 450,
   intervalSum: (d) => d.leaf ? 1 : 0,
   maxZoom: 10,
+  showTick: true
 }
 
 export default class GeoTimeLine {
@@ -62,6 +63,7 @@ export default class GeoTimeLine {
   private _ticks: Selection<SVGGElement, NodeItem, SVGGElement, unknown>;
   private _margin: MarginOpts;
   private _padding: MarginOpts;
+  private _showTick: boolean;
   /** get or set animation transition time */
   transition: number;
   private _forceTrans: boolean;
@@ -82,6 +84,7 @@ export default class GeoTimeLine {
    * @param {Function} [options.intervalSum] interval transform setting, defaults to (d) => d.leaf ? 1 : 0
    * @param {number} [options.minZoom] min zoom level
    * @param {number} [options.maxZoom = 10] min zoom level, defaults to 10
+   * @param {boolean} [options.showTick = true] show or hide tick, defaults to true
    */
   constructor(selector: string | BaseType, intervals: IntervalItem[], options: GeoTimeLineOptions = {}) {
     const selection = select(selector as BaseType)
@@ -106,7 +109,7 @@ export default class GeoTimeLine {
       width: isNaN(containerWidth) ? 1000 : containerWidth,
       ...options
     }
-    const { width, height, margin, padding, intervalSum, onChange, onAfterChange, time, transition } = opts
+    const { width, height, margin, padding, intervalSum, onChange, onAfterChange, time, transition, showTick } = opts
     this._width = width
     this._height = height
     this._margin = margin
@@ -121,6 +124,7 @@ export default class GeoTimeLine {
     this.font = `${opts.fontSize}px ${opts.fontFamily}`
     this._minZoom = opts.minZoom = opts.minZoom ?? this._zoomWidth / (this._zoomWidth + padding.right + padding.left)
     this._maxZoom = opts.maxZoom
+    this._showTick = showTick
     this.intervals = intervals
 
     this.options = opts
@@ -214,9 +218,11 @@ export default class GeoTimeLine {
 
     self._zoomedScale = self._xAxis.copy()
 
-    // draw text
-    self._text = self._drawText(self._cell)
-    self._ticks = self._addTicks(self._cell)
+    if (self._showTick) {
+      // draw text
+      self._text = self._drawText(self._cell)
+      self._ticks = self._addTicks(self._cell)      
+    }
 
     // drag handle
     self._handle = self._drawHandle(svg)
@@ -400,7 +406,8 @@ export default class GeoTimeLine {
         .attr('width', d => (d.target.x1 - d.target.x0))
         .attr('x', d => (d.target.x0));
 
-      trans(this._text, duration)
+      if (this._showTick) {
+        trans(this._text, duration)
         .attr("fill-opacity", (d) =>
           d.target.x1 - d.target.x0 > 14 ? 1 : 0
         )
@@ -425,6 +432,7 @@ export default class GeoTimeLine {
 
           return rectWidth < labelWidth * (1 - 0.05 * d.data.level) ? 0 : 1;
         }))
+      }
 
       trans(this._cell, duration)
         .style('opacity', d => d.visible ? 1 : 0)

@@ -54,6 +54,7 @@ export interface GeoTimeLineOptions {
   minZoom?: number;
   /** max zoom level, defaults to 10 */
   maxZoom?: number;
+  showTick?: boolean;
 }
 
 export interface GeoTimeScaleOptions {

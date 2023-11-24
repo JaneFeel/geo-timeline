@@ -44,6 +44,7 @@ export default class GeoTimeLine {
     private _ticks;
     private _margin;
     private _padding;
+    private _showTick;
     /** get or set animation transition time */
     transition: number;
     private _forceTrans;
@@ -63,6 +64,7 @@ export default class GeoTimeLine {
      * @param {Function} [options.intervalSum] interval transform setting, defaults to (d) => d.leaf ? 1 : 0
      * @param {number} [options.minZoom] min zoom level
      * @param {number} [options.maxZoom = 10] min zoom level, defaults to 10
+     * @param {boolean} [options.showTick = true] show or hide tick, defaults to true
      */
     constructor(selector: string | BaseType, intervals: IntervalItem[], options?: GeoTimeLineOptions);
     /** get or set time */
