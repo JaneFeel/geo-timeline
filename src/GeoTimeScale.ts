@@ -532,7 +532,7 @@ export default class GeoTimeLine {
     trans(handle, duration)
       .attr("transform", `translate(${x}, 0), scale(1)`)
     const text = this.getTimeByX(x, height)
-    if (text > 0) {
+    if (text >= 0) {
       handle
         .selectAll('text')
         .text(`${text}ma`)
@@ -548,7 +548,8 @@ export default class GeoTimeLine {
     }
     const { start, end } = node.data
     const nodeWidth = node.target.x1 - node.target.x0
-    const time = Math.ceil(start - ((start - end) / nodeWidth * (x - node.target.x0)))
+    const originTime = start - ((start - end) / nodeWidth * (x - node.target.x0))
+    const time = originTime < 0.004 ? 0 : Math.ceil(start - ((start - end) / nodeWidth * (x - node.target.x0)))
     return time;
   }
 
