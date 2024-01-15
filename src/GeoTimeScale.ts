@@ -549,6 +549,7 @@ export default class GeoTimeLine {
     const { start, end } = node.data
     const nodeWidth = node.target.x1 - node.target.x0
     const originTime = start - ((start - end) / nodeWidth * (x - node.target.x0))
+    console.log('originTime', originTime);
     const time = originTime < 0.004 ? 0 : Math.ceil(start - ((start - end) / nodeWidth * (x - node.target.x0)))
     return time;
   }
