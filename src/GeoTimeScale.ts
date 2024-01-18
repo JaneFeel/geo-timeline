@@ -155,7 +155,6 @@ export default class GeoTimeLine {
   }
 
   set time(val: number) {
-    console.log('set time', val);
     let maxLevelNodeParent;
     let maxLevel = 0;
     this.root.each(node => {
@@ -169,7 +168,7 @@ export default class GeoTimeLine {
     if (maxLevelNodeParent) {
       const x = this.getXByTime(val, maxLevelNodeParent);
       this._changeHandlePos(this._handle, x, this.height);
-      if (x > this.width) {
+      if (x > this.width || x < 0) {
         this._clicked(undefined, maxLevelNodeParent.parent, true);
       }
     }
